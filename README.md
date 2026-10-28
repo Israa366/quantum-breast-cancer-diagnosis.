@@ -143,20 +143,16 @@ mm = MinMaxScaler((0, np.pi)).fit(pca.transform(sc.transform(Xtr)))
 f = lambda A: BETA * np.clip(mm.transform(pca.transform(sc.transform(A))), 0, np.pi)
 Ztr, Zte = f(Xtr), f(Xte)
  
-# Rotation encoding + entangling ZZ gates (H, P(2x), CX-P(2(pi-x_i)(pi-x_j))-CX), 2 repetitions
-feature_map = ZZFeatureMap(feature_dimension=N_QUBITS, reps=REPS, entanglement="full")
-print(feature_map.decompose().draw(fold=120))
-qc = feature_map.decompose()
-print("qubits:", qc.num_qubits, "| depth:", qc.depth(), "| gates:", dict(qc.count_ops()))
- 
-kernel = FidelityStatevectorKernel(feature_map=feature_map)
-Ktr = kernel.evaluate(Ztr)
-Kte = kernel.evaluate(Zte, Ztr)
- 
-svm = SVC(kernel="precomputed", C=C, class_weight="balanced").fit(Ktr, ytr)
-pred, score = svm.predict(Kte), svm.decision_function(Kte)
-print(f"Qiskit quantum kernel SVM  accuracy={accuracy_score(yte, pred):.3f}  "
-      f"recall={recall_score(yte, pred):.3f}  ROC-AUC={roc_auc_score(yte, score):.3f}")
+Quantum resource and efficiency metrics
+Metric	Value
+Qubits	6
+Feature-map repetitions|	2
+Trainable circuit parameters|	0
+Gates per kernel circuit (compute–uncompute)	|228 (120 two-qubit)
+Circuit depth (upper bound)	|≤ 188
+Kernel circuits, full dataset (train + test)	|103,285 + 51,870 = 155,155
+Shots at 1,024 per circuit|	≈ 159 million
+Fit time over 5 folds (simulator)	|6.3 s quantum vs 1.6 s classical
 
 ## 8. Files
 - `qiskit_version.py`: the same quantum kernel built with Qiskit (ZZFeatureMap + FidelityStatevectorKernel)

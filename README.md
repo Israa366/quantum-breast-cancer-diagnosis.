@@ -34,19 +34,6 @@ Key finding: kernel concentration
 
 The naive kernel (β = 1) failed, with ROC-AUC 0.82 and only 15% recall. At full-strength encoding the quantum states are almost orthogonal, so the kernel matrix is close to the identity matrix (exponential concentration), and every patient looks equally different from every other. Tuning the bandwidth fixed this: β = 0.1 was selected in all 5 folds, and ROC-AUC rose to 0.994.
 
-How this follows "Introduction to Practical Quantum Computing"
-Resource concept	Where it is used in this project
-Qubits, superposition (§1)	6 qubits; Hadamard gates put every qubit in superposition
-Rotation encoding (§2.2, §3.1)	Each PCA feature is scaled to [0, π] and encoded as a phase rotation P(2x)
-Multi-qubit gates, entanglement (§2.3)	CNOT–P–CNOT blocks entangle every pair of qubits to capture feature relationships
-Hybrid algorithm (§4)	The quantum circuit computes the kernel; a classical SVM trains and predicts
-Quantum feature maps + SVM (§5.4)	Data is mapped into a 2⁶ = 64-dimensional space, where the SVM finds a separating boundary
-Shots (§5.5.2)	1,024-shot simulation to model measurement sampling
-
-We chose the quantum feature map route instead of a quantum neural network (§5.5), because it has no trainable circuit parameters and needs no classical optimiser loop, so training is more stable on a small medical dataset.
-
-qiskit_version.py builds the same model with Qiskit's ZZFeatureMap and FidelityStatevectorKernel. We checked numerically that our NumPy simulator and Qiskit's circuit convention give the same kernel (maximum difference about 10⁻¹⁵).
-
 5. Results
 Full dataset (5-fold CV, mean)
 Model	Accuracy	Recall	Precision	F1	ROC-AUC
@@ -104,14 +91,8 @@ python qkernel_breast_cancer.py
 
 The script runs in about 50 seconds on a laptop, prints all results, and writes results_summary.json.
 
-Qiskit version (single train/test split, β = 0.1):
-
-bash
-pip install qiskit qiskit-machine-learning scikit-learn
-python qiskit_version.py
 8. Files
 qkernel_breast_cancer.py: full pipeline, classical baseline, quantum kernel simulator and all experiments
-qiskit_version.py: the same quantum kernel built with Qiskit (ZZFeatureMap + FidelityStatevectorKernel)
 results_summary.json: all results (means and standard deviations), resource metrics and timing
 requirements.txt: dependencies
 9. Future work
